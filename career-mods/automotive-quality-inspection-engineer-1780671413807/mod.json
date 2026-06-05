@@ -1,0 +1,23 @@
+{
+  "id": "automotive-quality-inspection-engineer-1780671413807",
+  "title": "汽车制造质量检测工程师模拟器",
+  "version": "0.1.0",
+  "author": "local-draft",
+  "industry": "汽车制造",
+  "role": "质量检测工程师（QA/QC）",
+  "difficulty": "medium",
+  "tags": [
+    "汽车制造",
+    "质量检测",
+    "IQC",
+    "IPQC",
+    "OQC",
+    "客诉8D",
+    "产线异常",
+    "审核应对"
+  ],
+  "description": "玩家将扮演刚入职的汽车零部件工厂质量检测工程师，在30天内处理来料超差、产线异常、客户审核、客诉8D、出货检验、量具校验和月底质量KPI汇报。压力来自生产催货、客户追责、证据不足、跨部门扯皮以及任何一次漏检都可能变成批量质量事故。",
+  "estimatedMinutes": 30,
+  "language": "zh-CN",
+  "entryMissionId": "main-mission"
+}

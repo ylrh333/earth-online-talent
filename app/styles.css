@@ -247,29 +247,8 @@ textarea:focus {
   font-size: 24px;
 }
 
-.mission-strip {
-  display: grid;
-  grid-template-columns: 1fr 120px 120px;
-  gap: 12px;
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--line);
-  background: #faf7ef;
-}
-
-.mission-strip div {
-  min-width: 0;
-}
-
-.mission-strip strong {
-  display: block;
-  margin-top: 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .scene-visual {
-  min-height: 210px;
+  min-height: 260px;
   display: flex;
   align-items: flex-end;
   margin: 18px 24px 0;
@@ -301,14 +280,14 @@ textarea:focus {
 .scene-visual strong {
   display: block;
   margin-bottom: 6px;
-  font-size: 22px;
+  font-size: 28px;
 }
 
 .scene-visual p {
-  max-width: 780px;
+  max-width: 920px;
   color: rgba(255, 255, 255, 0.9);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .scene-image-btn {
@@ -335,15 +314,18 @@ textarea:focus {
   gap: 14px;
   overflow: auto;
   padding: 20px 24px;
+  min-height: 320px;
+  background: #fffdf8;
 }
 
 .message {
-  max-width: 840px;
-  padding: 14px 16px;
+  max-width: 900px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #faf7ef;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.75;
   white-space: pre-wrap;
 }
 
@@ -365,9 +347,15 @@ textarea:focus {
 .composer {
   display: grid;
   gap: 12px;
-  padding: 16px 24px 20px;
+  padding: 18px 24px 20px;
   border-top: 1px solid var(--line);
   background: #eee9dd;
+}
+
+.composer textarea {
+  min-height: 108px;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 .composer-actions {
@@ -601,25 +589,55 @@ textarea:focus {
 }
 
 .game-card {
-  width: min(1500px, 100%);
+  width: min(1120px, 100%);
   max-height: calc(100vh - 36px);
 }
 
 .game-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: 14px;
-  overflow: auto;
-  padding: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
+  padding: 0;
   background: #eee9dd;
 }
 
 .game-body .stage {
-  min-height: calc(100vh - 150px);
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(260px, 1fr) auto auto;
 }
 
-.game-body .play-tools {
-  align-self: stretch;
+.play-drawer {
+  margin: 0 24px 18px;
+}
+
+.play-drawer summary {
+  cursor: pointer;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffaf0;
+  font-weight: 800;
+}
+
+.play-drawer-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.play-meta h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.meta-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
 }
 
 .modal-head,

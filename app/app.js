@@ -73,27 +73,35 @@ const LEGACY_30_DAY_INTERVIEW_PROMPT = [
 const DEFAULT_CAREER_PROMPT = [
   '你是「地球 Online」职业 Mod 设计师。',
   '',
-  '任务：把用户在文本框中输入或上传的某个职业 30 天真实流水账工作日志，蒸馏成一个更形象、更好玩的真人模拟网页互动游戏 Mod。',
+  '任务：根据用户提供的某个具体职业 30 日真实流水账工作日志，生成一个生动形象、图文并茂、可互动游玩的网页职业模拟游戏 Mod。',
   '',
-  '输入材料：',
-  '- 用户会提供一个具体职业的 30 天真实流水账工作日志。日志可能按日期写，例如“2026 年 1 月 1 日 上午 1）我打开电脑做表格，花费 1 小时”。也可能按 Day 1 到 Day 30 写，或是自然语言流水账。',
+  '输入材料说明：',
+  '- 用户会提供一个具体职业的 30 日真实流水账工作日志。',
+  '- 日志可能按日期写，例如“2026 年 1 月 1 日 上午 1）我打开电脑做表格，花费 1 小时”。也可能按 Day 1 到 Day 30 写，或是自然语言流水账。',
   '- 每天可能包含上午、下午、加班/突发、遇到的人、花费时间、手里的材料/工具/线索、判断和行动、结果或遗留问题。',
+  '- 不要把这些日志当成职业百科素材，而要当成游戏剧本素材。',
   '- 如果日志不完整，也要基于已有内容生成可试玩初稿，但必须把不确定处写成可继续补充，不要编造真实公司、客户或机密。',
   '',
-  '蒸馏方法：',
-  '- 不要逐日照搬 30 天日记，要提炼出这个职业真正反复处理的任务、压力、人物关系、证据链、流程卡点和跨天未闭环问题。',
-  '- 从日志中找出最适合游戏化的几个日子：开局日、冲突升级日、新人翻车日、老手判断日、收尾复盘日。',
-  '- 把真实工作压缩成网页互动游戏结构：场景画面、主线任务、NPC、突发事件、岗位知识、评分标准、结局。',
-  '- 任务必须围绕真实问题，而不是岗位说明书；玩家要通过文字行动推进后果。',
-  '- NPC 要来自日志中反复出现的角色类型，并有各自目标、压力、知道的信息和不愿承担的责任，不能都配合玩家。',
-  '- 开局要像进入这 30 天中的某个真实工作日：先发生什么，谁来找玩家，玩家手上有什么线索。',
+  '第一步：从 30 日日志中蒸馏游戏素材',
+  '- 不要逐日照搬日记，要提炼出这个职业反复处理的真实任务、真实压力、人物关系、证据链、流程卡点和跨天未闭环问题。',
+  '- 找出最适合游戏化的 3 到 5 个关键日子：开局日、冲突升级日、新人翻车日、老手判断日、收尾复盘日。',
+  '- 提炼关键 NPC：领导、同事、客户、供应商、研发、现场人员、下属等。每个 NPC 都要有目标、压力、知道的信息、不愿承担的责任和可能的说话方式。',
+  '- 提炼关键道具和线索：表格、问题表、标准表、电脑、邮件、聊天记录、样件、测试工具、会议纪要、现场照片、数据、任务清单等。',
+  '- 提炼玩家要解决的问题：事的问题、人的问题、流程的问题、证据的问题、责任边界、时间压力、资源不足、信息不完整。',
   '',
-  '真人模拟网页游戏要求：',
-  '- 生成的 Mod 要像“真人模拟网页游戏”，不是干巴巴的文字问答。',
-  '- 每个关键场景都要有适合网页游戏背景图的中文 imagePrompt。',
-  '- imagePrompt 要写清地点、人物关系、桌面/现场物品、人物姿态、氛围、正在发生的问题和玩家第一眼能看到的线索。',
-  '- 画面应该真实、可视化、有职业现场感和可玩感；像玩家真的进入办公室、车间、会议室、客户现场、路试现场或实验室。',
-  '- 场景文字要让玩家知道：我在哪里，面前是谁，正在发生什么问题，我手里有什么线索，我下一步可以做什么。',
+  '第二步：生成网页互动游戏结构',
+  '- 这个 Mod 必须像“真人模拟网页游戏”，不是干巴巴的文字问答，也不是岗位说明书。',
+  '- 玩家进入游戏后，应该先看到一个形象的工作现场：地点、人物、物品、屏幕/文件/工具、现场问题、氛围压力。',
+  '- 每个主线任务都要从真实日志中的某个问题开始：谁来找玩家，发生了什么，玩家手上有什么线索，时间压力是什么。',
+  '- 玩家通过输入文字行动推进游戏，例如“我先看标准表，再联系研发确认复现条件”。AI 主持人再根据行动推进后果。',
+  '- 每个事件要有可玩冲突：信息缺失、NPC 推责、领导催促、客户追问、现场无法复现、数据对不上、资源不够。',
+  '- 评分要评玩家在本局里的行动：证据意识、沟通推进、风险判断、问题拆解、责任边界、复盘能力。',
+  '',
+  '第三步：图文并茂和场景图要求',
+  '- 每个关键场景都要写一个适合生成网页游戏背景图的中文 imagePrompt。',
+  '- imagePrompt 要像给游戏美术/图片模型的说明：写清地点、镜头视角、人物关系、桌面或现场物品、人物姿态、氛围、正在发生的问题、玩家第一眼能看到的线索。',
+  '- 场景要真实、可视化、有职业现场感和可玩感；像玩家真的进入办公室、车间、会议室、客户现场、路试现场或实验室。',
+  '- 场景文字要让玩家明确：我在哪里，面前是谁，正在发生什么问题，我手里有什么线索，我下一步可以做什么。',
   '- 不要出现真实公司 Logo、真实客户名称、商业机密文件、真实人脸。',
   '- Mod 的 world、player、knowledge、systemPrompt、endings 要用 Markdown 写得清楚，便于网页游戏展示和 AI 主持人使用。',
   '',
@@ -291,8 +299,40 @@ function loadSaves() {
 }
 
 function persistSaves() {
-  localStorage.setItem('earth-online-runs', JSON.stringify(state.saves))
+  safeSetLocalStorage('earth-online-runs', JSON.stringify(state.saves.map(compactRunForStorage)))
   renderSaves()
+}
+
+function safeSetLocalStorage(key, value) {
+  try {
+    localStorage.setItem(key, value)
+  } catch (error) {
+    localStorage.removeItem(key)
+    localStorage.setItem(key, value)
+  }
+}
+
+function compactModForStorage(mod) {
+  if (!mod) return mod
+  const compact = JSON.parse(JSON.stringify(mod))
+  if (Array.isArray(compact.scenes)) {
+    compact.scenes = compact.scenes.map(scene => {
+      const next = { ...scene }
+      if (String(next.image || '').startsWith('data:')) {
+        delete next.image
+        next.imageRemovedForStorage = true
+      }
+      return next
+    })
+  }
+  return compact
+}
+
+function compactRunForStorage(run) {
+  return {
+    ...run,
+    modSnapshot: compactModForStorage(run.modSnapshot)
+  }
 }
 
 function currentRunPayload() {
@@ -336,10 +376,13 @@ function renderSaves() {
 
 function loadLocalMods() {
   state.localMods = JSON.parse(localStorage.getItem('earth-online-career-mods') || '[]')
+    .map(mod => ({ ...mod, generatedMod: mod.generatedMod ? compactModForStorage(mod.generatedMod) : undefined }))
+  persistLocalMods()
 }
 
 function persistLocalMods() {
-  localStorage.setItem('earth-online-career-mods', JSON.stringify(state.localMods))
+  const compact = state.localMods.map(({ generatedMod, ...summary }) => summary)
+  safeSetLocalStorage('earth-online-career-mods', JSON.stringify(compact))
 }
 
 function upsertLocalMod(generatedMod) {
@@ -565,15 +608,17 @@ function renderRevisionLog() {
 
 function introFor(mod) {
   const mission = mod.missions[0]
+  const scene = currentSceneFor(mod, mission)
   return [
-    `你已进入「${mod.meta.title}」。`,
+    `你进入了「${mod.meta.title}」。`,
     '',
-    `身份：${mod.meta.role}`,
-    `任务：${mission?.brief || '等待任务加载'}`,
+    `当前场景：${scene.title}`,
+    `你的身份：${mod.meta.role}`,
+    `眼前的问题：${mission?.brief || scene.prompt || '等待任务加载'}`,
     '',
-    '你可以直接输入行动。不要只说“我处理一下”，尽量写清楚你要找谁、看什么、怎么判断、下一步要什么结果。',
+    '请回答你的第一步行动。',
     '',
-    '示例行动：我先要求客户提供不良样件照片和批次信息，同时安排仓库隔离同批次库存，并核对最近三天检验记录。'
+    '写清楚你要找谁、看什么、怎么判断、下一步要什么结果。'
   ].join('\n')
 }
 

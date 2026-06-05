@@ -159,24 +159,9 @@
               <button id="restart" class="ghost-btn" type="button">重开本局</button>
             </header>
 
-            <section class="mission-strip">
-              <div>
-                <span>当前任务</span>
-                <strong id="missionTitle">-</strong>
-              </div>
-              <div>
-                <span>难度</span>
-                <strong id="difficulty">-</strong>
-              </div>
-              <div>
-                <span>预计时长</span>
-                <strong id="minutes">-</strong>
-              </div>
-            </section>
-
             <section id="sceneVisual" class="scene-visual">
               <div>
-                <span>当前场景</span>
+                <span id="missionTitle">当前问题</span>
                 <strong id="sceneTitle">等待加载</strong>
                 <p id="scenePrompt">职业 Mod 加载后会显示本局场景画面提示。</p>
                 <button id="generateSceneImage" class="scene-image-btn" type="button">生成场景图</button>
@@ -195,40 +180,40 @@
                 <button id="send" class="primary-btn" type="submit">行动</button>
               </div>
             </form>
-          </section>
 
-          <aside class="play-tools">
-            <section class="panel mod-assistant">
-              <h2>AI Mod 助手</h2>
-              <p class="hint">试玩时发现“不像真实工作”或“不像真人模拟网页游戏”，就在这里说。AI 会实时修改当前职业 Mod，并保存到本机职业库。</p>
-              <textarea id="modFeedback" rows="5" placeholder="例如：这个场景不真实。汽车质量测试第一天应该先跟着老员工拿标准表检查间隙段差、发动机噪音和内饰外观；画面里也应该有车间、检具、问题表和研发同事，不应该一上来就处理客户投诉。"></textarea>
-              <button id="reviseMod" class="wide-btn secondary" type="button">根据反馈修改 Mod</button>
-              <p id="revisionStatus" class="hint"></p>
-              <div id="revisionLog" class="role-list"></div>
-            </section>
+            <details class="play-drawer">
+              <summary>AI 助手、职业信息、评分和存档</summary>
+              <div class="play-drawer-body">
+                <section class="panel mod-assistant">
+                  <h2>AI Mod 助手</h2>
+                  <p class="hint">试玩时发现“不像真实工作”或“不像真人模拟网页游戏”，就在这里说。AI 会实时修改当前职业 Mod，并保存到本机职业库。</p>
+                  <textarea id="modFeedback" rows="4" placeholder="例如：这个场景不真实。汽车质量测试第一天应该先跟着老员工拿标准表检查间隙段差、发动机噪音和内饰外观；画面里也应该有车间、检具、问题表和研发同事，不应该一上来就处理客户投诉。"></textarea>
+                  <button id="reviseMod" class="wide-btn secondary" type="button">根据反馈修改 Mod</button>
+                  <p id="revisionStatus" class="hint"></p>
+                  <div id="revisionLog" class="role-list"></div>
+                </section>
 
-            <details class="panel play-details">
-              <summary>职业信息、评分和存档</summary>
-              <div class="detail-grid">
-                <section>
+                <section class="panel play-meta">
+                  <h2>职业信息</h2>
+                  <div class="meta-line"><span>难度</span><strong id="difficulty">-</strong></div>
+                  <div class="meta-line"><span>预计时长</span><strong id="minutes">-</strong></div>
                   <h2>任务目标</h2>
                   <ul id="objectives" class="check-list"></ul>
                 </section>
-                <section>
+
+                <section class="panel play-meta">
                   <h2>评分维度</h2>
                   <div id="scoring" class="score-list"></div>
                 </section>
-                <section>
-                  <h2>NPC</h2>
+
+                <section class="panel play-meta">
+                  <h2>NPC 与存档</h2>
                   <div id="roles" class="role-list"></div>
-                </section>
-                <section>
-                  <h2>本地存档</h2>
                   <div id="saves" class="role-list"></div>
                 </section>
               </div>
             </details>
-          </aside>
+          </section>
         </div>
       </div>
     </section>
