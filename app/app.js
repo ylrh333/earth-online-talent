@@ -73,25 +73,28 @@ const LEGACY_30_DAY_INTERVIEW_PROMPT = [
 const DEFAULT_CAREER_PROMPT = [
   '你是「地球 Online」职业 Mod 设计师。',
   '',
-  '任务：把用户在文本框中输入的某个职业 30 天工作日志，蒸馏成一个图文并茂、可玩的职业模拟器网页游戏 Mod。',
+  '任务：把用户在文本框中输入或上传的某个职业 30 天真实流水账工作日志，蒸馏成一个更形象、更好玩的真人模拟网页互动游戏 Mod。',
   '',
   '输入材料：',
-  '- 用户会提供一个具体职业的 30 天工作日志。日志可能按 Day 1 到 Day 30 写，也可能是自然语言流水账。',
-  '- 每天可能包含早上、下午、加班/突发、遇到的人、手里的材料/工具/线索、判断和行动、结果或遗留问题。',
+  '- 用户会提供一个具体职业的 30 天真实流水账工作日志。日志可能按日期写，例如“2026 年 1 月 1 日 上午 1）我打开电脑做表格，花费 1 小时”。也可能按 Day 1 到 Day 30 写，或是自然语言流水账。',
+  '- 每天可能包含上午、下午、加班/突发、遇到的人、花费时间、手里的材料/工具/线索、判断和行动、结果或遗留问题。',
   '- 如果日志不完整，也要基于已有内容生成可试玩初稿，但必须把不确定处写成可继续补充，不要编造真实公司、客户或机密。',
   '',
   '蒸馏方法：',
   '- 不要逐日照搬 30 天日记，要提炼出这个职业真正反复处理的任务、压力、人物关系、证据链、流程卡点和跨天未闭环问题。',
   '- 从日志中找出最适合游戏化的几个日子：开局日、冲突升级日、新人翻车日、老手判断日、收尾复盘日。',
-  '- 把真实工作压缩成网页游戏结构：场景画面、主线任务、NPC、突发事件、岗位知识、评分标准、结局。',
+  '- 把真实工作压缩成网页互动游戏结构：场景画面、主线任务、NPC、突发事件、岗位知识、评分标准、结局。',
   '- 任务必须围绕真实问题，而不是岗位说明书；玩家要通过文字行动推进后果。',
   '- NPC 要来自日志中反复出现的角色类型，并有各自目标、压力、知道的信息和不愿承担的责任，不能都配合玩家。',
   '- 开局要像进入这 30 天中的某个真实工作日：先发生什么，谁来找玩家，玩家手上有什么线索。',
   '',
-  '图文并茂要求：',
+  '真人模拟网页游戏要求：',
+  '- 生成的 Mod 要像“真人模拟网页游戏”，不是干巴巴的文字问答。',
   '- 每个关键场景都要有适合网页游戏背景图的中文 imagePrompt。',
-  '- imagePrompt 要写清地点、人物关系、桌面/现场物品、氛围、正在发生的问题。',
-  '- 画面应该真实、可视化、有职业现场感；不要出现真实公司 Logo、真实客户名称、商业机密文件、真实人脸。',
+  '- imagePrompt 要写清地点、人物关系、桌面/现场物品、人物姿态、氛围、正在发生的问题和玩家第一眼能看到的线索。',
+  '- 画面应该真实、可视化、有职业现场感和可玩感；像玩家真的进入办公室、车间、会议室、客户现场、路试现场或实验室。',
+  '- 场景文字要让玩家知道：我在哪里，面前是谁，正在发生什么问题，我手里有什么线索，我下一步可以做什么。',
+  '- 不要出现真实公司 Logo、真实客户名称、商业机密文件、真实人脸。',
   '- Mod 的 world、player、knowledge、systemPrompt、endings 要用 Markdown 写得清楚，便于网页游戏展示和 AI 主持人使用。',
   '',
   '输出质量要求：',
@@ -358,6 +361,22 @@ function upsertLocalMod(generatedMod) {
   return summary
 }
 
+async function saveGeneratedModToDisk(mod) {
+  const payload = await getJson('/api/save-mod', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mod })
+  })
+  return payload
+}
+
+function resolveSceneImage(mod, image) {
+  const value = String(image || '')
+  if (!value) return ''
+  if (/^(data:|https?:|\/)/.test(value)) return value
+  return `/api/mod-assets/${encodeURIComponent(mod.meta.id)}/${value.replace(/^\/+/, '')}`
+}
+
 function combineMods() {
   state.mods = [...state.localMods, ...state.builtInMods]
 }
@@ -403,10 +422,10 @@ function uploadedCareerDocText() {
 
 function renderCareerDocStatus() {
   if (!uploadedCareerDoc) {
-    els.careerDocStatus.textContent = '未上传文档。支持文本和 PDF，内容只在本机提取，可作为 30 天工作日志素材。'
+    els.careerDocStatus.textContent = '未上传文档。支持文本和 PDF，内容只在本机提取，可作为 30 天真实流水账工作日志素材。'
     return
   }
-  els.careerDocStatus.textContent = `已上传：${uploadedCareerDoc.filename}，已提取约 ${uploadedCareerDoc.text.length} 个字符，会和文本框内容一起作为 30 天工作日志素材。`
+  els.careerDocStatus.textContent = `已上传：${uploadedCareerDoc.filename}，已提取约 ${uploadedCareerDoc.text.length} 个字符，会和文本框内容一起作为 30 天真实流水账工作日志素材。`
 }
 
 async function uploadCareerDocument(file) {
@@ -438,7 +457,7 @@ async function uploadCareerDocument(file) {
       text
     }
     renderCareerDocStatus()
-    els.distillerStatus.textContent = '文档已读取。你可以继续在文本框补充 30 天工作日志，也可以直接生成游戏 Mod。'
+    els.distillerStatus.textContent = '文档已读取。你可以继续在文本框补充 30 天真实流水账工作日志，也可以直接点击蒸馏生成游戏 Mod。'
   } catch (error) {
     uploadedCareerDoc = null
     els.careerDocStatus.textContent = `文档读取失败：${error.message}`
@@ -486,7 +505,8 @@ function renderModDetail() {
   els.minutes.textContent = `${mod.meta.estimatedMinutes || '-'} 分钟`
   els.sceneTitle.textContent = scene.title
   els.scenePrompt.textContent = scene.prompt
-  els.sceneVisual.style.setProperty('--scene-image', scene.image ? `url("${scene.image}")` : 'none')
+  const sceneImage = resolveSceneImage(mod, scene.image)
+  els.sceneVisual.style.setProperty('--scene-image', sceneImage ? `url("${sceneImage}")` : 'none')
   els.sceneImageStatus.textContent = scene.image ? '已生成场景图。' : ''
 
   els.objectives.innerHTML = (mission?.objectives || [])
@@ -643,9 +663,9 @@ async function sendDistillerAnswer(content) {
   if (!answer || state.busy) return
 
   state.busy = true
-  els.sendDistiller.disabled = true
+  if (els.sendDistiller) els.sendDistiller.disabled = true
   addDistillerMessage('player', answer)
-  renderDistillerMessages({ role: 'host', content: '正在检查你的 30 天工作日志素材...' })
+  renderDistillerMessages({ role: 'host', content: '正在检查你的 30 天真实流水账工作日志素材...' })
 
   try {
     const payload = await getJson('/api/interview-career', {
@@ -660,12 +680,12 @@ async function sendDistillerAnswer(content) {
     })
     addDistillerMessage('host', payload.content)
     els.distillerInput.value = ''
-    els.distillerStatus.textContent = '已收到工作日志。第几天、早上/下午/加班、人物和后果越具体，生成的职业 Mod 越真实。'
+    els.distillerStatus.textContent = '已收到工作日志。日期、上午/下午/加班、人物、耗时、线索和后果越具体，生成的职业 Mod 越真实。'
   } catch (error) {
     addDistillerMessage('system', error.message)
   } finally {
     state.busy = false
-    els.sendDistiller.disabled = false
+    if (els.sendDistiller) els.sendDistiller.disabled = false
   }
 }
 
@@ -677,15 +697,15 @@ async function generateCareerMod() {
   }
   const playerAnswers = messages.filter(message => message.role === 'player')
   if (!playerAnswers.length && !uploadedCareerDocText()) {
-    els.distillerStatus.textContent = '请先在文本框粘贴某个职业的 30 天工作日志，或上传一份 30 天流水账文档。'
+    els.distillerStatus.textContent = '请先在文本框粘贴某个职业的 30 天真实流水账工作日志，或上传一份 30 天流水账文档。'
     return
   }
 
   state.busy = true
   els.generateMod.disabled = true
   els.distillerStatus.textContent = uploadedCareerDoc
-    ? '正在把文本框和上传文档中的 30 天工作日志蒸馏成 Career Mod...'
-    : '正在把文本框中的 30 天工作日志蒸馏成 Career Mod...'
+    ? '正在把文本框和上传文档中的 30 天真实流水账蒸馏成真人模拟网页游戏 Mod...'
+    : '正在把文本框中的 30 天真实流水账蒸馏成真人模拟网页游戏 Mod...'
 
   try {
     const payload = await getJson('/api/generate-mod-from-interview', {
@@ -698,12 +718,14 @@ async function generateCareerMod() {
         messages
       })
     })
-    const generatedMod = normalizeGeneratedMod(payload)
+    let generatedMod = normalizeGeneratedMod(payload)
+    const saved = await saveGeneratedModToDisk(generatedMod)
+    generatedMod = normalizeGeneratedMod({ mod: saved.mod })
     const summary = upsertLocalMod(generatedMod)
     await selectMod(summary.id)
     els.generatorModal.hidden = true
     els.gameModal.hidden = false
-    addMessage('system', '已根据 30 天流水账生成并保存到本机职业库。你现在可以先试玩，再让 AI Mod 助手继续修。')
+    addMessage('system', `已根据 30 天真实流水账生成并保存到 ${saved.path}。这个 Mod 文件夹可以提交或拷贝，别人下载后也能离线加载基础游戏内容。`)
   } catch (error) {
     els.distillerStatus.textContent = `生成失败：${error.message}`
   } finally {
@@ -738,12 +760,14 @@ async function reviseCurrentMod() {
         feedback
       })
     })
-    const updatedMod = normalizeGeneratedMod({ mod: payload.mod || payload.updatedMod })
+    let updatedMod = normalizeGeneratedMod({ mod: payload.mod || payload.updatedMod })
+    const saved = await saveGeneratedModToDisk(updatedMod)
+    updatedMod = normalizeGeneratedMod({ mod: saved.mod })
     const summary = upsertLocalMod(updatedMod)
     state.currentMod = summary.generatedMod
     renderModDetail()
-    addMessage('system', `AI Mod 助手已修改当前职业 Mod：${payload.summary || '已根据反馈更新场景、问题和判断标准。'}`)
-    els.revisionStatus.textContent = '已保存为本机职业库的新版本，可以继续试玩验证。'
+    addMessage('system', `AI Mod 助手已修改当前职业 Mod：${payload.summary || '已根据反馈更新场景、问题和判断标准。'} 已保存到 ${saved.path}。`)
+    els.revisionStatus.textContent = '已保存为 career-mods/ 里的新 Mod 文件夹，可以继续试玩验证。'
     els.modFeedback.value = ''
   } catch (error) {
     els.revisionStatus.textContent = `修改失败：${error.message}`
@@ -791,9 +815,11 @@ async function generateCurrentSceneImage() {
     state.currentMod.scenes[0].imageProvider = payload.provider || imageSettingsPayload().provider
     state.currentMod.scenes[0].imageModel = payload.model || imageSettingsPayload().model
 
+    const saved = await saveGeneratedModToDisk(state.currentMod)
+    state.currentMod = normalizeGeneratedMod({ mod: saved.mod })
     upsertLocalMod(state.currentMod)
     renderModDetail()
-    els.sceneImageStatus.textContent = `场景图已生成：${payload.model || 'image model'}`
+    els.sceneImageStatus.textContent = `场景图已生成并保存到 ${saved.path}/assets：${payload.model || 'image model'}`
   } catch (error) {
     els.sceneImageStatus.textContent = `生成失败：${error.message}`
   } finally {

@@ -1,7 +1,11 @@
 const { spawn } = require('child_process')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 
 const port = 5180
 const base = `http://localhost:${port}`
+const saveModsDir = path.join(os.tmpdir(), `earth-online-save-mods-${Date.now()}`)
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -38,6 +42,7 @@ async function main() {
     env: {
       ...process.env,
       PORT: String(port),
+      SAVE_MODS_DIR: saveModsDir,
       OPENAI_API_KEY: '',
       ANTHROPIC_API_KEY: '',
       ANTHROPIC_AUTH_TOKEN: ''
@@ -162,6 +167,44 @@ async function main() {
       if (!payload.mod?.meta?.title || !payload.mod?.missions?.length) {
         throw new Error('根据采访生成 Career Mod 返回不正确')
       }
+    })
+
+    await assertOk('生成 Mod 可保存为本地文件夹和资产', async () => {
+      const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="red"/></svg>').toString('base64')
+      const res = await fetch(`${base}/api/save-mod`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mod: {
+            meta: {
+              id: 'smoke-local-save',
+              title: '测试保存职业模拟器',
+              version: '0.1.0',
+              author: 'smoke-test',
+              industry: '测试行业',
+              role: '测试岗位',
+              difficulty: 'easy',
+              estimatedMinutes: 10
+            },
+            world: '# 世界背景\n',
+            player: '# 玩家身份\n',
+            roles: [],
+            missions: [{ id: 'main-mission', title: '测试任务', brief: '测试保存 Mod 文件夹。', objectives: [] }],
+            events: [],
+            scenes: [{ id: 'scene-1', title: '测试场景', image: `data:image/svg+xml;base64,${svg}`, imagePrompt: '测试图' }],
+            knowledge: '# 岗位知识\n',
+            scoring: { dimensions: [] },
+            systemPrompt: '# 系统提示词\n',
+            endings: '# 结局\n'
+          }
+        })
+      })
+      const payload = await res.json()
+      const savedDir = path.join(process.cwd(), payload.path)
+      if (!fs.existsSync(path.join(savedDir, 'mod.json'))) throw new Error('缺少 mod.json')
+      if (!fs.existsSync(path.join(savedDir, 'missions.json'))) throw new Error('缺少 missions.json')
+      if (!fs.existsSync(path.join(savedDir, 'scenes.json'))) throw new Error('缺少 scenes.json')
+      if (!fs.existsSync(path.join(savedDir, 'assets', 'scene-1.svg'))) throw new Error('缺少本地场景图片资产')
     })
 
     await assertOk('无 API Key 演示修订 Career Mod 可用', async () => {

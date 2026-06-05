@@ -6,6 +6,7 @@ const zlib = require('zlib')
 const root = path.resolve(__dirname, '..')
 const appDir = path.join(root, 'app')
 const modsDir = path.join(root, 'career-mods')
+const generatedModsDir = process.env.SAVE_MODS_DIR ? path.resolve(process.env.SAVE_MODS_DIR) : modsDir
 const port = Number(process.env.PORT || 5173)
 
 const mime = {
@@ -172,6 +173,76 @@ function slugify(input) {
     .replace(/[\u4e00-\u9fa5]/g, '')
     .replace(/-+/g, '-')
     || `career-mod-${Date.now()}`
+}
+
+function uniqueModId(id) {
+  const base = slugify(id)
+  if (!fs.existsSync(path.join(generatedModsDir, base))) return base
+  return `${base}-${Date.now()}`
+}
+
+function jsonPretty(value) {
+  return JSON.stringify(value, null, 2) + '\n'
+}
+
+function dataUrlToAsset(value, fallbackName) {
+  const match = String(value || '').match(/^data:([^;,]+)(?:;charset=[^;,]+)?;base64,(.+)$/)
+  if (!match) return null
+  const mimeType = match[1]
+  const extMap = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+    'image/svg+xml': 'svg'
+  }
+  const ext = extMap[mimeType] || 'bin'
+  return {
+    filename: `${fallbackName}.${ext}`,
+    buffer: Buffer.from(match[2], 'base64')
+  }
+}
+
+function writeGeneratedModToDisk(inputMod) {
+  if (!inputMod?.meta) throw new Error('缺少可保存的 Mod')
+  const mod = JSON.parse(JSON.stringify(inputMod))
+  const id = uniqueModId(mod.meta.id || mod.meta.title || mod.meta.role)
+  mod.meta.id = id
+  const dir = path.join(generatedModsDir, id)
+  const assetsDir = path.join(dir, 'assets')
+  fs.mkdirSync(dir, { recursive: true })
+
+  let assetCount = 0
+  mod.scenes = Array.isArray(mod.scenes) ? mod.scenes : []
+  mod.scenes = mod.scenes.map((scene, index) => {
+    const next = { ...scene }
+    const asset = dataUrlToAsset(next.image, `scene-${index + 1}`)
+    if (asset) {
+      fs.mkdirSync(assetsDir, { recursive: true })
+      fs.writeFileSync(path.join(assetsDir, asset.filename), asset.buffer)
+      next.image = `assets/${asset.filename}`
+      assetCount += 1
+    }
+    return next
+  })
+
+  fs.writeFileSync(path.join(dir, 'mod.json'), jsonPretty(mod.meta))
+  fs.writeFileSync(path.join(dir, 'world.md'), String(mod.world || '# 世界背景\n'))
+  fs.writeFileSync(path.join(dir, 'player.md'), String(mod.player || '# 玩家身份\n'))
+  fs.writeFileSync(path.join(dir, 'roles.json'), jsonPretty(mod.roles || []))
+  fs.writeFileSync(path.join(dir, 'missions.json'), jsonPretty(mod.missions || []))
+  fs.writeFileSync(path.join(dir, 'events.json'), jsonPretty(mod.events || []))
+  fs.writeFileSync(path.join(dir, 'scenes.json'), jsonPretty(mod.scenes || []))
+  fs.writeFileSync(path.join(dir, 'knowledge.md'), String(mod.knowledge || '# 岗位知识\n'))
+  fs.writeFileSync(path.join(dir, 'scoring.json'), jsonPretty(mod.scoring || { dimensions: [] }))
+  fs.writeFileSync(path.join(dir, 'system-prompt.md'), String(mod.systemPrompt || mod.system_prompt || '# 系统提示词\n'))
+  fs.writeFileSync(path.join(dir, 'endings.md'), String(mod.endings || '# 结局\n'))
+
+  return {
+    mod,
+    id,
+    path: path.relative(root, dir),
+    assetCount
+  }
 }
 
 function listMods() {
@@ -496,25 +567,28 @@ function defaultDistillerPrompt() {
   return [
     '你是「地球 Online」职业 Mod 设计师。',
     '',
-    '任务：把用户在文本框中输入的某个职业 30 天工作日志，蒸馏成一个图文并茂、可玩的职业模拟器网页游戏 Mod。',
+    '任务：把用户在文本框中输入或上传的某个职业 30 天真实流水账工作日志，蒸馏成一个更形象、更好玩的真人模拟网页互动游戏 Mod。',
     '',
     '输入材料：',
-    '- 用户会提供一个具体职业的 30 天工作日志。日志可能按 Day 1 到 Day 30 写，也可能是自然语言流水账。',
-    '- 每天可能包含早上、下午、加班/突发、遇到的人、手里的材料/工具/线索、判断和行动、结果或遗留问题。',
+    '- 用户会提供一个具体职业的 30 天真实流水账工作日志。日志可能按日期写，例如“2026 年 1 月 1 日 上午 1）我打开电脑做表格，花费 1 小时”。也可能按 Day 1 到 Day 30 写，或是自然语言流水账。',
+    '- 每天可能包含上午、下午、加班/突发、遇到的人、花费时间、手里的材料/工具/线索、判断和行动、结果或遗留问题。',
     '- 如果日志不完整，也要基于已有内容生成可试玩初稿，但必须把不确定处写成可继续补充，不要编造真实公司、客户或机密。',
     '',
     '蒸馏方法：',
     '- 不要逐日照搬 30 天日记，要提炼出这个职业真正反复处理的任务、压力、人物关系、证据链、流程卡点和跨天未闭环问题。',
     '- 从日志中找出最适合游戏化的几个日子：开局日、冲突升级日、新人翻车日、老手判断日、收尾复盘日。',
-    '- 把真实工作压缩成网页游戏结构：场景画面、主线任务、NPC、突发事件、岗位知识、评分标准、结局。',
+    '- 把真实工作压缩成网页互动游戏结构：场景画面、主线任务、NPC、突发事件、岗位知识、评分标准、结局。',
     '- 任务必须围绕真实问题，而不是岗位说明书；玩家要通过文字行动推进后果。',
     '- NPC 要来自日志中反复出现的角色类型，并有各自目标、压力、知道的信息和不愿承担的责任，不能都配合玩家。',
     '- 开局要像进入这 30 天中的某个真实工作日：先发生什么，谁来找玩家，玩家手上有什么线索。',
     '',
-    '图文并茂要求：',
+    '真人模拟网页游戏要求：',
+    '- 生成的 Mod 要像“真人模拟网页游戏”，不是干巴巴的文字问答。',
     '- 每个关键场景都要有适合网页游戏背景图的中文 imagePrompt。',
-    '- imagePrompt 要写清地点、人物关系、桌面/现场物品、氛围、正在发生的问题。',
-    '- 画面应该真实、可视化、有职业现场感；不要出现真实公司 Logo、真实客户名称、商业机密文件、真实人脸。',
+    '- imagePrompt 要写清地点、人物关系、桌面/现场物品、人物姿态、氛围、正在发生的问题和玩家第一眼能看到的线索。',
+    '- 画面应该真实、可视化、有职业现场感和可玩感；像玩家真的进入办公室、车间、会议室、客户现场、路试现场或实验室。',
+    '- 场景文字要让玩家知道：我在哪里，面前是谁，正在发生什么问题，我手里有什么线索，我下一步可以做什么。',
+    '- 不要出现真实公司 Logo、真实客户名称、商业机密文件、真实人脸。',
     '- Mod 的 world、player、knowledge、systemPrompt、endings 要用 Markdown 写得清楚，便于网页游戏展示和 AI 主持人使用。',
     '',
     '输出质量要求：',
@@ -595,11 +669,13 @@ async function generateModWithModel({ settings, title, industry, detail, methodP
     '要求：',
     '- 输出严格 JSON，不要 Markdown，不要代码块。',
     '- 职业必须具体到岗位，不要写泛行业。',
-    '- 作者材料通常是一份 30 天职业流水账，包含第几天、早上/下午/加班、人物、线索、判断、行动、结果和遗留问题。',
+    '- 作者材料通常是一份 30 天真实流水账工作日志，包含日期或第几天、上午/下午/加班、人物、耗时、线索、判断、行动、结果和遗留问题。',
     '- 你要从流水账里蒸馏出重复任务、关键 NPC、真实冲突、证据链、跨天遗留问题、失败后果、小白开局和高手判断标准。',
     '- 不要逐日照搬日记，要把 30 天材料压缩成可玩的开局任务、事件链、角色压力、评分维度、岗位知识库和场景。',
     '- 这是开放式职业模拟，不是职业百科，不是选择题。',
-    '- 玩家操作方式是：先展示场景，然后玩家输入文字行动，你根据行动推进后果。',
+    '- 玩家操作方式是：先展示像真人模拟网页游戏一样的工作场景，然后玩家输入文字行动，你根据行动推进后果。',
+    '- 场景必须形象可视化：要写清工作地点、NPC 在干什么、桌面/现场有什么物品、玩家第一眼能看到什么线索。',
+    '- 每个 scenes.imagePrompt 都要能生成真实感网页游戏背景图，像办公室、车间、会议室、客户现场、路试现场或实验室中的一幕。',
     '- NPC 要有目标和压力，不能都配合玩家。',
     '- 任务要有真实冲突、信息不完整、时间压力和后果。',
     '- 开局必须像岗位小白第一天进入工作：先遇到什么事，谁来找他，他手上有什么线索。',
@@ -1338,6 +1414,18 @@ async function route(req, res) {
       return
     }
 
+    const assetMatch = url.pathname.match(/^\/api\/mod-assets\/([a-z0-9-]+)\/(.+)$/)
+    if (req.method === 'GET' && assetMatch) {
+      const target = safeModPath(assetMatch[1], assetMatch[2])
+      if (!fs.existsSync(target) || fs.statSync(target).isDirectory()) {
+        sendJson(res, 404, { error: '资源不存在' })
+        return
+      }
+      const ext = path.extname(target)
+      send(res, 200, fs.readFileSync(target), mime[ext] || 'application/octet-stream')
+      return
+    }
+
     if (req.method === 'POST' && url.pathname === '/api/chat') {
       const body = JSON.parse(await readBody(req) || '{}')
       const content = await chatWithModel(body)
@@ -1362,6 +1450,13 @@ async function route(req, res) {
     if (req.method === 'POST' && url.pathname === '/api/generate-mod-from-interview') {
       const body = JSON.parse(await readBody(req) || '{}')
       const payload = await generateModFromInterviewWithModel(body)
+      sendJson(res, 200, payload)
+      return
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/save-mod') {
+      const body = JSON.parse(await readBody(req) || '{}')
+      const payload = writeGeneratedModToDisk(body.mod)
       sendJson(res, 200, payload)
       return
     }

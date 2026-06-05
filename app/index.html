@@ -113,7 +113,7 @@
             <div class="prompt-editor-head">
               <div>
                 <h3>蒸馏成职业 Mod 的提示词</h3>
-                <p class="hint">这段提示词用于把文本框里的职业 30 天工作日志蒸馏成图文并茂的职业模拟器网页游戏 Mod。可以编辑，保存后本机生成职业 Mod 时会按这套方法生成。</p>
+                <p class="hint">这段提示词用于把 30 天真实流水账工作日志蒸馏成真人模拟网页互动游戏 Mod。可以编辑，保存后本机生成职业 Mod 时会按这套方法生成。</p>
               </div>
               <div class="prompt-actions">
                 <button id="resetCareerPrompt" class="ghost-btn" type="button">恢复默认</button>
@@ -123,16 +123,16 @@
             <textarea id="careerPrompt" rows="7"></textarea>
           </section>
           <form id="distillerComposer" class="distiller-composer">
-            <textarea id="distillerInput" rows="10" placeholder="请把某个具体职业的 30 天工作日志直接粘贴到这里。\n\n例如：Day 1 早上做了什么，下午做了什么，加班/突发发生了什么，遇到谁，怎么处理，结果或遗留问题是什么。\n\n粘贴后点击「根据 30 天流水账生成并保存成游戏 Mod」。"></textarea>
+            <textarea id="distillerInput" rows="10" placeholder="请把某个具体职业的 30 天真实流水账工作日志直接粘贴到这里。\n\n例如：2026 年 1 月 1 日\n上午\n1）我打开电脑做了一个全公司职工表格，花费 1 小时。\n2）我跟同事一起摸鱼，摸了 30 分钟。\n3）领导安排我去现场处理质量问题，花费 1 小时。\n\n下午/加班/突发：继续写遇到谁、发生什么、怎么处理、结果或遗留问题。\n\n粘贴后点击「蒸馏生成游戏 Mod」。"></textarea>
             <div class="composer-actions">
               <label class="file-btn">
                 上传文档
                 <input id="careerDocUpload" type="file" accept=".txt,.md,.csv,.json,.pdf,text/*,application/pdf">
               </label>
               <button id="clearCareerDoc" class="ghost-btn" type="button">清除文档</button>
-              <button id="generateMod" class="ghost-btn" type="button">根据 30 天流水账生成并保存成游戏 Mod</button>
+              <button id="generateMod" class="ghost-btn" type="button">蒸馏生成游戏 Mod</button>
             </div>
-            <p id="careerDocStatus" class="hint">未上传文档。支持文本和 PDF，内容只在本机提取，可作为 30 天工作日志素材。</p>
+            <p id="careerDocStatus" class="hint">未上传文档。支持文本和 PDF，内容只在本机提取，可作为 30 天真实流水账工作日志素材。</p>
             <p id="distillerStatus" class="hint"></p>
           </form>
         </div>
@@ -200,8 +200,8 @@
           <aside class="play-tools">
             <section class="panel mod-assistant">
               <h2>AI Mod 助手</h2>
-              <p class="hint">试玩时发现“不像真实工作”，就在这里说。AI 会实时修改当前职业 Mod，并保存到本机职业库。</p>
-              <textarea id="modFeedback" rows="5" placeholder="例如：这个场景不真实。汽车质量测试第一天应该先跟着老员工拿标准表检查间隙段差、发动机噪音和内饰外观，不应该一上来就处理客户投诉。"></textarea>
+              <p class="hint">试玩时发现“不像真实工作”或“不像真人模拟网页游戏”，就在这里说。AI 会实时修改当前职业 Mod，并保存到本机职业库。</p>
+              <textarea id="modFeedback" rows="5" placeholder="例如：这个场景不真实。汽车质量测试第一天应该先跟着老员工拿标准表检查间隙段差、发动机噪音和内饰外观；画面里也应该有车间、检具、问题表和研发同事，不应该一上来就处理客户投诉。"></textarea>
               <button id="reviseMod" class="wide-btn secondary" type="button">根据反馈修改 Mod</button>
               <p id="revisionStatus" class="hint"></p>
               <div id="revisionLog" class="role-list"></div>
