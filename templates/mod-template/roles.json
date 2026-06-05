@@ -1,0 +1,29 @@
+[
+  {
+    "id": "npc_1",
+    "name": "NPC 名称",
+    "role": "NPC 岗位",
+    "personality": "性格和沟通风格",
+    "goal": "这个 NPC 想要什么",
+    "knows": ["这个 NPC 知道的信息"],
+    "hiddenPressure": "这个 NPC 没直接说出口的压力"
+  },
+  {
+    "id": "npc_2",
+    "name": "NPC 名称",
+    "role": "NPC 岗位",
+    "personality": "性格和沟通风格",
+    "goal": "这个 NPC 想要什么",
+    "knows": ["这个 NPC 知道的信息"],
+    "hiddenPressure": "这个 NPC 没直接说出口的压力"
+  },
+  {
+    "id": "npc_3",
+    "name": "NPC 名称",
+    "role": "NPC 岗位",
+    "personality": "性格和沟通风格",
+    "goal": "这个 NPC 想要什么",
+    "knows": ["这个 NPC 知道的信息"],
+    "hiddenPressure": "这个 NPC 没直接说出口的压力"
+  }
+]

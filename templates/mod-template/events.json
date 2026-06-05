@@ -1,0 +1,47 @@
+[
+  {
+    "id": "event-1",
+    "trigger": "什么时候触发",
+    "title": "事件标题",
+    "content": "事件内容",
+    "pressure": ["压力 1", "压力 2"],
+    "goodResponse": "玩家合理处理时应该体现什么",
+    "badResponse": "玩家处理不当时会造成什么后果"
+  },
+  {
+    "id": "event-2",
+    "trigger": "什么时候触发",
+    "title": "事件标题",
+    "content": "事件内容",
+    "pressure": ["压力 1", "压力 2"],
+    "goodResponse": "玩家合理处理时应该体现什么",
+    "badResponse": "玩家处理不当时会造成什么后果"
+  },
+  {
+    "id": "event-3",
+    "trigger": "什么时候触发",
+    "title": "事件标题",
+    "content": "事件内容",
+    "pressure": ["压力 1", "压力 2"],
+    "goodResponse": "玩家合理处理时应该体现什么",
+    "badResponse": "玩家处理不当时会造成什么后果"
+  },
+  {
+    "id": "event-4",
+    "trigger": "什么时候触发",
+    "title": "事件标题",
+    "content": "事件内容",
+    "pressure": ["压力 1", "压力 2"],
+    "goodResponse": "玩家合理处理时应该体现什么",
+    "badResponse": "玩家处理不当时会造成什么后果"
+  },
+  {
+    "id": "event-5",
+    "trigger": "什么时候触发",
+    "title": "事件标题",
+    "content": "事件内容",
+    "pressure": ["压力 1", "压力 2"],
+    "goodResponse": "玩家合理处理时应该体现什么",
+    "badResponse": "玩家处理不当时会造成什么后果"
+  }
+]

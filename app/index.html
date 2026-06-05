@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>地球 Online Career Mod 模拟器</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="app-head">
+        <section class="brand">
+          <div class="brand-mark">EO</div>
+          <div>
+            <h1>地球 Online</h1>
+            <p>Career Mod 模拟器</p>
+          </div>
+        </section>
+      </header>
+
+      <section class="home-grid">
+        <section class="panel">
+          <div class="panel-head">
+            <h2>加载职业</h2>
+            <span id="modCount">0</span>
+          </div>
+          <label class="select-label">
+            <span>职业 Mod</span>
+            <select id="modSelect"></select>
+          </label>
+          <button id="loadMod" class="wide-btn" type="button">加载职业</button>
+          <div id="modList" class="mod-list compact" hidden></div>
+        </section>
+
+        <section class="panel generator">
+          <h2>生成职业 Mod</h2>
+          <button id="openGenerator" class="wide-btn" type="button">生成职业 Mod</button>
+          <p class="hint">由玩家自己的文字 API 生成、试玩、反馈并修改职业 Mod。</p>
+        </section>
+
+        <section class="panel settings">
+          <div class="panel-head">
+            <h2>文字 API 设置</h2>
+            <button id="saveSettings" class="small-btn" type="button">保存</button>
+          </div>
+          <label>
+            <span>Provider</span>
+            <select id="provider">
+              <option value="maxtabs">MaxTabs API</option>
+              <option value="openclaw">OpenClaw / sub2api</option>
+              <option value="openai">OpenAI-compatible</option>
+              <option value="anthropic">Anthropic / Messages</option>
+            </select>
+          </label>
+          <label>
+            <span>Base URL</span>
+            <input id="baseUrl" autocomplete="off" placeholder="https://api.openai.com/v1">
+          </label>
+          <label>
+            <span>Model</span>
+            <input id="model" autocomplete="off" placeholder="gpt-4o-mini">
+          </label>
+          <label>
+            <span>API Key</span>
+            <input id="apiKey" type="password" autocomplete="off" placeholder="留空则使用本地演示模式">
+          </label>
+          <p class="hint">用于生成职业 Mod、修改 Mod、NPC 对话和存档分析。</p>
+        </section>
+
+        <section class="panel settings">
+          <div class="panel-head">
+            <h2>图片 API 设置</h2>
+            <button id="saveImageSettings" class="small-btn" type="button">保存</button>
+          </div>
+          <label>
+            <span>Provider</span>
+            <select id="imageProvider">
+              <option value="cockpit-tools-image">Cockpit Tools Local</option>
+              <option value="openai-image">OpenAI-compatible Images</option>
+              <option value="custom-image">Custom Image API</option>
+            </select>
+          </label>
+          <label>
+            <span>Base URL</span>
+            <input id="imageBaseUrl" autocomplete="off" placeholder="http://127.0.0.1:60587/v1">
+          </label>
+          <label>
+            <span>Model</span>
+            <input id="imageModel" autocomplete="off" placeholder="gpt-image-2-medium">
+          </label>
+          <label>
+            <span>API Key</span>
+            <input id="imageApiKey" type="password" autocomplete="off" placeholder="用于后续生成场景图片">
+          </label>
+          <p class="hint">当前先保存图片 API 配置，职业 Mod 会生成场景图片提示词。</p>
+        </section>
+      </section>
+
+    </main>
+
+    <section id="generatorModal" class="modal" hidden>
+      <div class="modal-backdrop" data-close-generator></div>
+      <div class="modal-card distiller-card">
+        <header class="modal-head">
+          <div>
+            <p class="eyebrow">Career Mod Generator</p>
+            <h2>生成职业 Mod</h2>
+          </div>
+          <button class="ghost-btn" type="button" data-close-generator>关闭</button>
+        </header>
+        <div class="modal-body distiller-body">
+          <section class="prompt-editor">
+            <div class="prompt-editor-head">
+              <div>
+                <h3>蒸馏成职业 Mod 的提示词</h3>
+                <p class="hint">这段提示词用于把文本框里的职业 30 天工作日志蒸馏成图文并茂的职业模拟器网页游戏 Mod。可以编辑，保存后本机生成职业 Mod 时会按这套方法生成。</p>
+              </div>
+              <div class="prompt-actions">
+                <button id="resetCareerPrompt" class="ghost-btn" type="button">恢复默认</button>
+                <button id="saveCareerPrompt" class="small-btn" type="button">保存提示词</button>
+              </div>
+            </div>
+            <textarea id="careerPrompt" rows="7"></textarea>
+          </section>
+          <form id="distillerComposer" class="distiller-composer">
+            <textarea id="distillerInput" rows="10" placeholder="请把某个具体职业的 30 天工作日志直接粘贴到这里。\n\n例如：Day 1 早上做了什么，下午做了什么，加班/突发发生了什么，遇到谁，怎么处理，结果或遗留问题是什么。\n\n粘贴后点击「根据 30 天流水账生成并保存成游戏 Mod」。"></textarea>
+            <div class="composer-actions">
+              <label class="file-btn">
+                上传文档
+                <input id="careerDocUpload" type="file" accept=".txt,.md,.csv,.json,.pdf,text/*,application/pdf">
+              </label>
+              <button id="clearCareerDoc" class="ghost-btn" type="button">清除文档</button>
+              <button id="generateMod" class="ghost-btn" type="button">根据 30 天流水账生成并保存成游戏 Mod</button>
+            </div>
+            <p id="careerDocStatus" class="hint">未上传文档。支持文本和 PDF，内容只在本机提取，可作为 30 天工作日志素材。</p>
+            <p id="distillerStatus" class="hint"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameModal" class="modal game-modal" hidden>
+      <div class="modal-backdrop" data-close-game></div>
+      <div class="modal-card game-card">
+        <header class="modal-head">
+          <div>
+            <p class="eyebrow">Career Web Game</p>
+            <h2>职业网页游戏</h2>
+          </div>
+          <button class="ghost-btn" type="button" data-close-game>返回主页</button>
+        </header>
+        <div class="game-body">
+          <section class="stage">
+            <header class="stage-head">
+              <div>
+                <p id="modMeta" class="eyebrow">正在加载</p>
+                <h2 id="modTitle">职业副本</h2>
+              </div>
+              <button id="restart" class="ghost-btn" type="button">重开本局</button>
+            </header>
+
+            <section class="mission-strip">
+              <div>
+                <span>当前任务</span>
+                <strong id="missionTitle">-</strong>
+              </div>
+              <div>
+                <span>难度</span>
+                <strong id="difficulty">-</strong>
+              </div>
+              <div>
+                <span>预计时长</span>
+                <strong id="minutes">-</strong>
+              </div>
+            </section>
+
+            <section id="sceneVisual" class="scene-visual">
+              <div>
+                <span>当前场景</span>
+                <strong id="sceneTitle">等待加载</strong>
+                <p id="scenePrompt">职业 Mod 加载后会显示本局场景画面提示。</p>
+                <button id="generateSceneImage" class="scene-image-btn" type="button">生成场景图</button>
+                <p id="sceneImageStatus" class="scene-image-status"></p>
+              </div>
+            </section>
+
+            <section id="messages" class="messages" aria-live="polite"></section>
+
+            <form id="composer" class="composer">
+              <textarea id="playerInput" rows="3" placeholder="阅读当前场景，然后输入你的行动。例如：我先要求客户发不良样件照片，并核对出货批次和库存范围。"></textarea>
+              <div class="composer-actions">
+                <button id="saveRun" class="ghost-btn" type="button">保存存档</button>
+                <button id="analyzeRun" class="ghost-btn" type="button">分析天赋</button>
+                <button id="settle" class="ghost-btn" type="button">要求复盘</button>
+                <button id="send" class="primary-btn" type="submit">行动</button>
+              </div>
+            </form>
+          </section>
+
+          <aside class="play-tools">
+            <section class="panel mod-assistant">
+              <h2>AI Mod 助手</h2>
+              <p class="hint">试玩时发现“不像真实工作”，就在这里说。AI 会实时修改当前职业 Mod，并保存到本机职业库。</p>
+              <textarea id="modFeedback" rows="5" placeholder="例如：这个场景不真实。汽车质量测试第一天应该先跟着老员工拿标准表检查间隙段差、发动机噪音和内饰外观，不应该一上来就处理客户投诉。"></textarea>
+              <button id="reviseMod" class="wide-btn secondary" type="button">根据反馈修改 Mod</button>
+              <p id="revisionStatus" class="hint"></p>
+              <div id="revisionLog" class="role-list"></div>
+            </section>
+
+            <details class="panel play-details">
+              <summary>职业信息、评分和存档</summary>
+              <div class="detail-grid">
+                <section>
+                  <h2>任务目标</h2>
+                  <ul id="objectives" class="check-list"></ul>
+                </section>
+                <section>
+                  <h2>评分维度</h2>
+                  <div id="scoring" class="score-list"></div>
+                </section>
+                <section>
+                  <h2>NPC</h2>
+                  <div id="roles" class="role-list"></div>
+                </section>
+                <section>
+                  <h2>本地存档</h2>
+                  <div id="saves" class="role-list"></div>
+                </section>
+              </div>
+            </details>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

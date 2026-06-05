@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Local editor files
+.vscode/
+.idea/
+
+# Runtime output
+tmp/
+coverage/
+dist/

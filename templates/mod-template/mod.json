@@ -1,0 +1,14 @@
+{
+  "id": "replace-with-role-id",
+  "title": "职业名称模拟器",
+  "version": "0.1.0",
+  "author": "your-name",
+  "industry": "行业名称",
+  "role": "具体岗位",
+  "difficulty": "medium",
+  "tags": ["标签1", "标签2"],
+  "description": "一句话说明玩家会体验什么真实岗位压力。",
+  "estimatedMinutes": 30,
+  "language": "zh-CN",
+  "entryMissionId": "main-mission"
+}

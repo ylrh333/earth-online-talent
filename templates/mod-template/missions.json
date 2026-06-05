@@ -1,0 +1,14 @@
+[
+  {
+    "id": "main-mission",
+    "title": "主线任务标题",
+    "brief": "玩家开局接到的任务和压力。",
+    "startState": {
+      "timeLimitHours": 24,
+      "availableClues": ["初始线索 1", "初始线索 2"]
+    },
+    "objectives": ["目标 1", "目标 2", "目标 3"],
+    "successCriteria": ["成功标准 1", "成功标准 2"],
+    "failureRisks": ["失败风险 1", "失败风险 2"]
+  }
+]

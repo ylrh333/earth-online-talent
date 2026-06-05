@@ -1,0 +1,37 @@
+{
+  "dimensions": [
+    {
+      "key": "dimension-1",
+      "name": "评分维度 1",
+      "description": "这个维度判断什么玩家行动。",
+      "positiveSignals": ["正向信号 1", "正向信号 2"],
+      "negativeSignals": ["负向信号 1", "负向信号 2"]
+    },
+    {
+      "key": "dimension-2",
+      "name": "评分维度 2",
+      "description": "这个维度判断什么玩家行动。",
+      "positiveSignals": ["正向信号 1", "正向信号 2"],
+      "negativeSignals": ["负向信号 1", "负向信号 2"]
+    },
+    {
+      "key": "dimension-3",
+      "name": "评分维度 3",
+      "description": "这个维度判断什么玩家行动。",
+      "positiveSignals": ["正向信号 1", "正向信号 2"],
+      "negativeSignals": ["负向信号 1", "负向信号 2"]
+    },
+    {
+      "key": "dimension-4",
+      "name": "评分维度 4",
+      "description": "这个维度判断什么玩家行动。",
+      "positiveSignals": ["正向信号 1", "正向信号 2"],
+      "negativeSignals": ["负向信号 1", "负向信号 2"]
+    }
+  ],
+  "endingLevels": [
+    { "level": "excellent", "name": "像真实老手", "minScore": 85 },
+    { "level": "pass", "name": "能扛住基本工作", "minScore": 60 },
+    { "level": "risk", "name": "容易在真实岗位翻车", "minScore": 0 }
+  ]
+}
