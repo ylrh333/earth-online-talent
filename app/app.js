@@ -424,6 +424,10 @@ function combineMods() {
   state.mods = [...state.localMods, ...state.builtInMods]
 }
 
+function isDeletableMod(mod) {
+  return Boolean(mod?.deletable || mod?.generatedMod || /-\d{10,}(?:-\d{10,})?$/.test(String(mod?.id || '')))
+}
+
 function renderMessages(extra) {
   const messages = extra ? [...state.messages, extra] : state.messages
   els.messages.innerHTML = messages.map(message => {
@@ -526,11 +530,17 @@ function renderMods() {
 
   els.modList.innerHTML = state.mods.map(mod => {
     const active = state.currentMod && state.currentMod.meta.id === mod.id ? ' active' : ''
+    const deleteButton = isDeletableMod(mod)
+      ? `<button class="mod-delete-btn" type="button" data-delete-mod-id="${escapeHtml(mod.id)}">删除</button>`
+      : ''
     return `
-      <button class="mod-item${active}" type="button" data-mod-id="${escapeHtml(mod.id)}">
-        <strong>${escapeHtml(mod.title)}</strong>
-        <span>${escapeHtml(mod.industry)} · ${escapeHtml(mod.role)} · ${escapeHtml(mod.difficulty)}</span>
-      </button>
+      <div class="mod-item${active}">
+        <button class="mod-select-btn" type="button" data-mod-id="${escapeHtml(mod.id)}">
+          <strong>${escapeHtml(mod.title)}</strong>
+          <span>${escapeHtml(mod.industry)} · ${escapeHtml(mod.role)} · ${escapeHtml(mod.difficulty)}</span>
+        </button>
+        ${deleteButton}
+      </div>
     `
   }).join('')
 }
@@ -683,6 +693,45 @@ async function selectMod(id) {
   state.messages = []
   renderModDetail()
   addMessage('host', introFor(state.currentMod))
+}
+
+async function reloadMods() {
+  state.builtInMods = await getJson('/api/mods')
+  loadLocalMods()
+  combineMods()
+  renderMods()
+}
+
+async function deleteMod(id) {
+  const target = state.mods.find(mod => mod.id === id)
+  if (!target || !isDeletableMod(target)) return
+  const confirmed = window.confirm(`确定删除「${target.title}」这个本地职业 Mod 吗？\n\n会从浏览器列表和 career-mods 文件夹中移除。`)
+  if (!confirmed) return
+
+  try {
+    await getJson(`/api/mods/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  } catch (error) {
+    if (!/文件不存在|ENOENT|Cannot find/i.test(error.message)) {
+      addMessage('system', `删除失败：${error.message}`)
+      return
+    }
+  }
+
+  state.localMods = state.localMods.filter(mod => mod.id !== id)
+  persistLocalMods()
+  await reloadMods()
+
+  if (state.currentMod?.meta?.id === id) {
+    state.currentMod = null
+    state.messages = []
+    if (state.mods[0]) {
+      await selectMod(state.mods[0].id)
+    } else {
+      els.messages.innerHTML = ''
+      els.modMeta.textContent = ''
+      els.modTitle.textContent = '职业网页游戏'
+    }
+  }
 }
 
 function normalizeGeneratedMod(payload) {
@@ -943,6 +992,11 @@ async function sendAction(content) {
 }
 
 els.modList.addEventListener('click', event => {
+  const deleteButton = event.target.closest('[data-delete-mod-id]')
+  if (deleteButton) {
+    deleteMod(deleteButton.dataset.deleteModId).catch(error => addMessage('system', `删除失败：${error.message}`))
+    return
+  }
   const button = event.target.closest('[data-mod-id]')
   if (button) selectMod(button.dataset.modId).catch(error => addMessage('system', error.message))
 })

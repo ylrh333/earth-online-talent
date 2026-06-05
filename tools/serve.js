@@ -264,10 +264,29 @@ function listMods() {
         difficulty: meta.difficulty,
         tags: meta.tags || [],
         description: meta.description,
-        estimatedMinutes: meta.estimatedMinutes
+        estimatedMinutes: meta.estimatedMinutes,
+        deletable: isGeneratedMod(meta)
       }
     })
     .filter(Boolean)
+}
+
+function isGeneratedMod(meta) {
+  return meta?.author === 'local-draft' || /-\d{10,}(?:-\d{10,})?$/.test(String(meta?.id || ''))
+}
+
+function deleteGeneratedMod(id) {
+  const meta = readJson(safeModPath(id, 'mod.json'))
+  if (!isGeneratedMod(meta)) {
+    throw new Error('内置示例 Mod 不允许删除')
+  }
+  const target = path.join(modsDir, id)
+  const normalized = path.normalize(target)
+  if (!normalized.startsWith(modsDir + path.sep)) {
+    throw new Error('非法 Mod 路径')
+  }
+  fs.rmSync(normalized, { recursive: true, force: true })
+  return { id, deleted: true }
 }
 
 function loadMod(id) {
@@ -430,6 +449,10 @@ function imageSizeForAspect(aspectRatio) {
   return '1536x1024'
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 async function generateSceneImageWithModel({ settings, prompt, aspectRatio }) {
   const finalPrompt = String(prompt || '').trim()
   if (!finalPrompt) throw new Error('缺少图片提示词')
@@ -449,16 +472,34 @@ async function generateSceneImageWithModel({ settings, prompt, aspectRatio }) {
   }
   if (resolved.quality) body.quality = resolved.quality
 
-  const response = await fetch(`${baseUrl}/images/generations`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(body)
-  })
+  const endpoint = `${baseUrl}/images/generations`
+  let response
+  let payload = {}
+  let lastError = null
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(body)
+      })
+      payload = await response.json().catch(() => ({}))
+      if (response.ok || !isRetryableImageError(payload.error?.message || payload.error || response.status)) break
+      lastError = payload.error?.message || payload.error || `图片 API 请求失败：${response.status}`
+    } catch (error) {
+      lastError = error
+      if (!isRetryableImageError(error.message)) break
+    }
+    await sleep(450 * attempt)
+  }
 
-  const payload = await response.json().catch(() => ({}))
+  if (!response) {
+    const message = readableProviderError(lastError?.message || lastError || 'fetch failed')
+    throw new Error(`图片 API 连接失败：${message}`)
+  }
   if (!response.ok) {
     const message = readableProviderError(payload.error?.message || payload.error || `图片 API 请求失败：${response.status}`)
     throw new Error(message)
@@ -488,6 +529,11 @@ async function generateSceneImageWithModel({ settings, prompt, aspectRatio }) {
   throw new Error('图片 API 没有返回 b64_json 或 url')
 }
 
+function isRetryableImageError(value) {
+  const message = String(value || '')
+  return /rate limit|429|try again|fetch failed|ECONNRESET|ECONNREFUSED|socket|timeout/i.test(message)
+}
+
 function readableProviderError(value) {
   let message = typeof value === 'string' ? value : JSON.stringify(value)
   try {
@@ -496,8 +542,17 @@ function readableProviderError(value) {
   } catch (error) {
     // Keep original string.
   }
-  if (/rate_limit/i.test(message)) {
-    return '图片模型当前被上游限速了，请稍后重试。'
+  if (/rate[_ -]?limit|too many requests|try again/i.test(message)) {
+    return '图片模型当前被上游限速了，请等几秒再点一次。如果连续失败，说明这个图片 Key 或模型通道暂时不可用。'
+  }
+  if (/No available accounts/i.test(message)) {
+    return '图片 API 当前没有可用账号或额度。请换一个可用 Key，或稍后再试。'
+  }
+  if (/ECONNREFUSED|fetch failed/i.test(message)) {
+    return '本地图片接口连接失败。请确认 Cockpit Tools 正在运行，或把图片 API Base URL 改成可访问的 OpenAI-compatible 地址。'
+  }
+  if (/401|unauthorized|invalid api key/i.test(message)) {
+    return '图片 API Key 无效或没有权限。请检查“图片 API 设置”里的 Key。'
   }
   return message
 }
@@ -1422,6 +1477,10 @@ async function route(req, res) {
     const modMatch = url.pathname.match(/^\/api\/mods\/([a-z0-9-]+)$/)
     if (req.method === 'GET' && modMatch) {
       sendJson(res, 200, loadMod(modMatch[1]))
+      return
+    }
+    if (req.method === 'DELETE' && modMatch) {
+      sendJson(res, 200, deleteGeneratedMod(modMatch[1]))
       return
     }
 

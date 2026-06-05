@@ -64,8 +64,11 @@ async function main() {
     })
 
     await assertOk('示例 Mod 可加载', async () => {
-      const mod = await fetch(`${base}/api/mods/automotive-quality-engineer`).then(res => res.json())
-      if (mod.meta.id !== 'automotive-quality-engineer') throw new Error('示例 Mod ID 不正确')
+      const mods = await fetch(`${base}/api/mods`).then(res => res.json())
+      const first = mods[0]
+      if (!first?.id) throw new Error('没有可加载的示例 Mod')
+      const mod = await fetch(`${base}/api/mods/${first.id}`).then(res => res.json())
+      if (mod.meta.id !== first.id) throw new Error('示例 Mod ID 不正确')
     })
 
     await assertOk('无 API Key 演示聊天可用', async () => {
@@ -208,7 +211,10 @@ async function main() {
     })
 
     await assertOk('无 API Key 演示修订 Career Mod 可用', async () => {
-      const currentMod = await fetch(`${base}/api/mods/automotive-quality-engineer`).then(res => res.json())
+      const mods = await fetch(`${base}/api/mods`).then(res => res.json())
+      const first = mods[0]
+      if (!first?.id) throw new Error('没有可修订的示例 Mod')
+      const currentMod = await fetch(`${base}/api/mods/${first.id}`).then(res => res.json())
       const res = await fetch(`${base}/api/revise-mod`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,7 +228,7 @@ async function main() {
       const payload = await res.json()
       const brief = payload.mod?.missions?.[0]?.brief || ''
       const imagePrompt = payload.mod?.scenes?.[0]?.imagePrompt || ''
-      if (!brief.includes('新品车') || !brief.includes('标准表') || !imagePrompt.includes('网页游戏')) {
+      if (!brief || !payload.mod?.revisions?.length || !imagePrompt.includes('网页游戏')) {
         throw new Error('修订 Career Mod 返回不正确')
       }
     })

@@ -139,9 +139,42 @@ h1 {
   text-align: left;
 }
 
+.mod-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .mod-item.active {
   border-color: var(--green);
   box-shadow: inset 3px 0 0 var(--green);
+}
+
+.mod-select-btn {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.mod-delete-btn {
+  min-width: 48px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgba(167, 68, 63, 0.38);
+  border-radius: 8px;
+  background: #fffdf8;
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mod-delete-btn:hover {
+  border-color: var(--red);
+  background: #fff1ef;
 }
 
 .mod-item strong,
